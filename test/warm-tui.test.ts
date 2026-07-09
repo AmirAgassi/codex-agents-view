@@ -107,6 +107,7 @@ describe("warm native Codex TUI manager", () => {
     const configured = tmux.calls.map((call) => call.join(" "));
     expect(configured).toContain("bind-key -n C-b detach-client");
     expect(configured).toContain("bind-key -n S-Left detach-client");
+    expect(configured).toContain("set-option -g mouse on");
     expect(configured.some((call) => call.includes("escape-time"))).toBe(false);
   });
 

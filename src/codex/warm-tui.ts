@@ -380,6 +380,7 @@ export class WarmNativeTuiManager {
       ["set-option", "-g", "prefix", "None"],
       ["set-option", "-g", "prefix2", "None"],
       ["set-option", "-g", "focus-events", "on"],
+      ["set-option", "-g", "mouse", "on"],
       ["set-option", "-g", "allow-rename", "off"],
       ["set-option", "-g", "automatic-rename", "off"],
       ["set-option", "-g", "history-limit", "20000"],
