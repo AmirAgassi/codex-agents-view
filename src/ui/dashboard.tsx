@@ -100,6 +100,7 @@ function requestKey(request: PendingRequest): string {
 export function Dashboard({
   state,
   preferences,
+  initialSelectedThreadId,
   title = "Codex Agent View",
   version,
   model,
@@ -125,7 +126,7 @@ export function Dashboard({
     () => buildDashboardModel(state, preferences),
     [state, preferences],
   );
-  const [selection, setSelection] = useState<string>();
+  const [selection, setSelection] = useState<string | undefined>(initialSelectedThreadId);
   const previousItemIds = useRef<string[]>([]);
   const [peekedId, setPeekedId] = useState<string>();
   const [helpVisible, setHelpVisible] = useState(false);
@@ -156,6 +157,7 @@ export function Dashboard({
     cwd ?? preferences.defaultCwd ?? selected?.thread.cwd ?? process.cwd();
 
   useEffect(() => {
+    if (currentItemIds.length === 0) return;
     previousItemIds.current = currentItemIds;
     if (selectedId !== selection) setSelection(selectedId);
   }, [currentItemIds, selectedId, selection]);

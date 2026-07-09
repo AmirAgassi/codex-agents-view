@@ -49,6 +49,7 @@ export interface AgentViewAppProps {
   client: CodexClient;
   options: CliOptions;
   initialPreferences: Preferences;
+  initialSelectedThreadId?: string;
   codexVersion: string;
   onDone: (outcome: AppOutcome) => void;
   onWarmThreads?: (targets: WarmThreadTarget[]) => void;
@@ -117,6 +118,7 @@ export function AgentViewApp({
   client,
   options,
   initialPreferences,
+  initialSelectedThreadId,
   codexVersion,
   onDone,
   onWarmThreads,
@@ -686,6 +688,7 @@ export function AgentViewApp({
     <Dashboard
       state={state}
       preferences={preferences}
+      initialSelectedThreadId={initialSelectedThreadId}
       version={codexVersion}
       model={modelLabel}
       cwd={options.cwd}

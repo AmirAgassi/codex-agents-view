@@ -455,13 +455,14 @@ describe("session selectors", () => {
     });
   });
 
-  it("keeps selection stable and picks the nearest row after deletion", () => {
+  it("keeps selection stable and picks a fallback when absent", () => {
     const a = record("a", { type: "idle" }, BASE_TIME);
     const b = record("b", { type: "idle" }, BASE_TIME - 1);
     const c = record("c", { type: "idle" }, BASE_TIME - 2);
 
     expect(reconcileSelection("b", [c, b, a], ["a", "b", "c"])).toBe("b");
     expect(reconcileSelection("b", [a, c], ["a", "b", "c"])).toBe("c");
+    expect(reconcileSelection("missing", [a, c])).toBe("a");
     expect(reconcileSelection(undefined, [a, c])).toBe("a");
     expect(reconcileSelection("a", [])).toBeUndefined();
   });

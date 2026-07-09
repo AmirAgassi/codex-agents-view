@@ -27,6 +27,7 @@ export interface DashboardStatusMessage {
 export interface DashboardProps {
   state: DashboardState;
   preferences: Preferences;
+  initialSelectedThreadId?: string;
   title?: string;
   version?: string;
   model?: string;

@@ -61,6 +61,7 @@ async function runDashboard(
   codexVersion: string,
   client: CodexClient,
   nativeTuis: WarmNativeTuiManager,
+  initialSelectedThreadId?: string,
 ): Promise<AppOutcome> {
   const preferences = await loadPreferences();
 
@@ -79,6 +80,7 @@ async function runDashboard(
       client={client}
       options={options}
       initialPreferences={preferences}
+      initialSelectedThreadId={initialSelectedThreadId}
       codexVersion={codexVersion}
       onDone={onDone}
       onWarmThreads={(targets) => {
@@ -128,14 +130,22 @@ async function main(): Promise<void> {
   const removeSignalHandlers = installSignalCleanup(client, nativeTuis);
   try {
     let running = true;
+    let selectedThreadId: string | undefined;
     while (running) {
-      const outcome = await runDashboard(options, codexVersion, client, nativeTuis);
+      const outcome = await runDashboard(
+        options,
+        codexVersion,
+        client,
+        nativeTuis,
+        selectedThreadId,
+      );
 
       if (outcome.type === "exit") {
         running = false;
         continue;
       }
 
+      selectedThreadId = outcome.threadId;
       try {
         const result = await nativeTuis.attach(outcome.threadId, { cwd: outcome.cwd });
         if (result.exitCode !== 0) {
