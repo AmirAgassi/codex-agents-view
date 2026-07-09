@@ -3,3 +3,12 @@ dist/
 coverage/
 *.log
 .DS_Store
+.env
+.env.*
+!.env.example
+.npmrc
+.codex/
+*.key
+*.pem
+*.p12
+*.pfx

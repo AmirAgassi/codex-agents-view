@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "A keyboard-first terminal dashboard that opens sessions in the native Codex TUI.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmirAgassi/codex-agent-view.git"
+  },
+  "homepage": "https://github.com/AmirAgassi/codex-agent-view#readme",
+  "bugs": {
+    "url": "https://github.com/AmirAgassi/codex-agent-view/issues"
+  },
   "type": "module",
   "bin": {
     "codex-agents": "./dist/cli.js"

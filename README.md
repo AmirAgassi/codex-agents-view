@@ -4,6 +4,10 @@ A keyboard-first terminal dashboard for persistent Codex sessions that opens eve
 It uses [Codex App Server](https://developers.openai.com/codex/app-server) directly, so sessions continue while the dashboard is closed and
 pending approvals are replayed when it reconnects.
 
+> "This was a 4-shot slop project I made for Codex to replicate Claude Code's agents view (see https://code.claude.com/docs/en/agent-view) and better utilize my new Codex plan at work after 5.6 Sol dropped. I'm pretty happy with how it turned out, all things considered."
+
+This is an unofficial community project and is not affiliated with or endorsed by OpenAI or Anthropic.
+
 ## What works
 
 - Sessions grouped into pinned, awaiting input, working, and completed
@@ -29,7 +33,8 @@ pending approvals are replayed when it reconnects.
 ## Install
 
 ```bash
-cd ~/Desktop/codex-agent-view
+git clone https://github.com/AmirAgassi/codex-agent-view.git
+cd codex-agent-view
 npm install
 npm run build
 npm link
@@ -50,6 +55,7 @@ codex-agents --all
 ```
 
 Run `codex-agents --help` for model, approval, sandbox, and direct-checkout options.
+Agent View starts the managed local App Server daemon automatically.
 
 ## Keyboard shortcuts
 
