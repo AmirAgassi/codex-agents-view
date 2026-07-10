@@ -147,8 +147,8 @@ function compareWithOrder(
     if (rightOrder === undefined) return -1;
     if (leftOrder !== rightOrder) return leftOrder - rightOrder;
   }
-  const recency = getSessionTimestamp(right) - getSessionTimestamp(left);
-  return recency || left.thread.id.localeCompare(right.thread.id);
+  const launchOrder = left.thread.createdAt - right.thread.createdAt;
+  return launchOrder || left.thread.id.localeCompare(right.thread.id);
 }
 
 export function compareSessions(

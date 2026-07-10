@@ -9,13 +9,13 @@ import {
 } from "../src/ui/format.js";
 import { buildDashboardModel } from "../src/ui/model.js";
 
-function historicalSession(id: string) {
+function historicalSession(id: string, createdAt = 100, updatedAt = 200) {
   return createSessionRecord({
     id,
     preview: `Task ${id}`,
     cwd: "/repo",
-    createdAt: 100,
-    updatedAt: 200,
+    createdAt,
+    updatedAt,
     status: { type: "notLoaded" },
     turns: [],
   });
@@ -32,6 +32,20 @@ describe("dashboard presentation model", () => {
     expect(semanticGroup(session)).toBe("completed");
     expect(model.counts).toEqual({ needsInput: 0, working: 0, completed: 1 });
     expect(model.sections[0]?.label).toBe("Completed");
+  });
+
+  it("keeps sessions in launch order when their activity changes", () => {
+    const older = historicalSession("older", 100, 500);
+    const newer = historicalSession("newer", 200, 300);
+    older.lastChangedAt = 1_000;
+    newer.lastChangedAt = 400;
+
+    const model = buildDashboardModel(
+      { connection: "connected", sessions: { newer, older } },
+      DEFAULT_PREFERENCES,
+    );
+
+    expect(model.items.map((item) => item.id)).toEqual(["older", "newer"]);
   });
 
   it("strips terminal control characters from model-controlled text", () => {

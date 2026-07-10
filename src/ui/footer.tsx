@@ -54,7 +54,7 @@ function FooterComponent({
           <Text dimColor>
             {hasPendingRequest ? "alt+a allow · alt+d decline · " : ""}
             {hasSelection ? "←/→/enter chat · / commands · space reply · " : ""}
-            type new task · alt+? shortcuts
+            type new task · shift+↑/↓ reorder · alt+? shortcuts
           </Text>
         )}
       </Box>

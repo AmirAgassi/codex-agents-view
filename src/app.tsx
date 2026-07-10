@@ -635,12 +635,7 @@ export function AgentViewApp({
     [beginOperation, client, endOperation, ensureClientConnected],
   );
 
-  const handlePinToggle = useCallback((threadId: string, pinned: boolean): void => {
-    const current = preferencesRef.current;
-    const ids = new Set(current.pinnedThreadIds);
-    if (pinned) ids.add(threadId);
-    else ids.delete(threadId);
-    const next = { ...current, pinnedThreadIds: [...ids] };
+  const persistPreferences = useCallback((next: Preferences): void => {
     preferencesRef.current = next;
     setPreferences(next);
     const save = preferenceSaveQueue.current
@@ -651,6 +646,26 @@ export function AgentViewApp({
       setStatusMessage({ kind: "error", text: messageFromError(error) });
     });
   }, []);
+
+  const handlePinToggle = useCallback((threadId: string, pinned: boolean): void => {
+    const current = preferencesRef.current;
+    const ids = new Set(current.pinnedThreadIds);
+    if (pinned) ids.add(threadId);
+    else ids.delete(threadId);
+    persistPreferences({ ...current, pinnedThreadIds: [...ids] });
+  }, [persistPreferences]);
+
+  const handleReorder = useCallback((orderedThreadIds: string[]): void => {
+    const current = preferencesRef.current;
+    const visibleIds = new Set(orderedThreadIds);
+    persistPreferences({
+      ...current,
+      order: [
+        ...orderedThreadIds,
+        ...current.order.filter((threadId) => !visibleIds.has(threadId)),
+      ],
+    });
+  }, [persistPreferences]);
 
   const handleSelectionChange = useCallback(
     (session: SessionRecord | undefined): void => {
@@ -710,6 +725,7 @@ export function AgentViewApp({
       onRename={(threadId, name) => void handleRename(threadId, name)}
       onArchive={(threadId) => void handleArchive(threadId)}
       onPinToggle={handlePinToggle}
+      onReorder={handleReorder}
       onAttach={handleAttach}
       onRefresh={() => void refresh()}
       onExit={() => finish({ type: "exit" })}

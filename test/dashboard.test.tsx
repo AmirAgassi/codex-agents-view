@@ -69,7 +69,7 @@ function mount(
   dashboardState: DashboardState,
   initialSelectedThreadId: string | undefined,
   onAttach: (threadId: string, initialInput?: string) => void,
-  props: Pick<DashboardProps, "onDispatch"> = {},
+  props: Pick<DashboardProps, "onDispatch" | "onReorder"> = {},
 ) {
   const stdin = inputStream();
   const stdout = outputStream();
@@ -194,5 +194,18 @@ describe("Dashboard selection", () => {
     await dashboard.instance.waitUntilRenderFlush();
 
     expect(onAttach).toHaveBeenCalledWith("first");
+  });
+
+  it("reorders the selected session within its section with shift+down", async () => {
+    const onReorder = vi.fn();
+    const dashboard = mount(state(["first", "second", "third"]), "second", vi.fn(), {
+      onReorder,
+    });
+    await dashboard.instance.waitUntilRenderFlush();
+
+    dashboard.stdin.write("\u001b[1;2B");
+    await dashboard.instance.waitUntilRenderFlush();
+
+    expect(onReorder).toHaveBeenCalledWith(["first", "third", "second"]);
   });
 });

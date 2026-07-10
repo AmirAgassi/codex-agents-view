@@ -4,6 +4,7 @@ import { Box, Text } from "ink";
 const SHORTCUTS: ReadonlyArray<readonly [string, string]> = [
   ["type", "draft and dispatch a new task"],
   ["↑ / ↓", "move between sessions"],
+  ["shift+↑ / ↓", "reorder within the section"],
   ["← / → / enter", "open chat when draft is empty"],
   ["/", "open native Codex slash commands"],
   ["shift+← / ^B", "park native chat; keep it warm"],

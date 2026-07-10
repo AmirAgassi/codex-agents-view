@@ -14,6 +14,7 @@ This is an unofficial community project and is not affiliated with or endorsed b
 - Sessions grouped into pinned, awaiting input, working, and completed
 - Live turn, tool, plan, diff, output, and status events
 - Type to dispatch from the dashboard with isolated Git worktrees by default; new tasks stay in Agents View and run in the background
+- Stable launch-time ordering with persistent manual reordering
 - Enter the installed native Codex TUI with its complete history, slash commands, attachments, modes, approvals, and future features intact
 - Preload active or pinned native chats and retain up to three warm TUIs so MCP servers initialize once
 - Detach from a native chat while its turn keeps running, then open or manage another session
@@ -72,6 +73,7 @@ This grants Codex full access to your machine. Use it only in an environment you
 |---|---|
 | Type | Draft and dispatch a new task |
 | `↑` / `↓` | Move between sessions |
+| `Shift+↑` / `Shift+↓` | Reorder the selected session within its section |
 | `←` / `→` / `Enter` | Open the session in the native Codex TUI when the draft is empty |
 | `/` | Open the selected chat with `/` in the native Codex composer |
 | `Shift+←` / `Ctrl+B` | Detach from the native chat and return (used inside Codex) |

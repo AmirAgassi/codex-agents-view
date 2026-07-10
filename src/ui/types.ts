@@ -44,6 +44,7 @@ export interface DashboardProps {
   onRename?: (threadId: string, name: string) => void;
   onArchive?: (threadId: string) => void;
   onPinToggle?: (threadId: string, pinned: boolean) => void;
+  onReorder?: (orderedThreadIds: string[]) => void;
   onAttach?: (threadId: string, initialInput?: string) => void;
   onRefresh?: () => void;
   onExit?: () => void;

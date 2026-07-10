@@ -114,6 +114,7 @@ export function Dashboard({
   onRename,
   onArchive,
   onPinToggle,
+  onReorder,
   onAttach,
   onRefresh,
   onExit,
@@ -169,6 +170,25 @@ export function Dashboard({
     if (!next) return;
     setSelection(next.id);
     setPeekedId(undefined);
+  };
+
+  const reorderSelection = (offset: -1 | 1): void => {
+    if (!selectedId) return;
+    const section = dashboardModel.sections.find((candidate) =>
+      candidate.items.some((item) => item.id === selectedId)
+    );
+    if (!section) return;
+    const sectionIndex = section.items.findIndex((item) => item.id === selectedId);
+    const adjacent = section.items[sectionIndex + offset];
+    if (!adjacent) return;
+    const orderedIds = dashboardModel.items.map((item) => item.id);
+    const selectedOrderIndex = orderedIds.indexOf(selectedId);
+    const adjacentOrderIndex = orderedIds.indexOf(adjacent.id);
+    [orderedIds[selectedOrderIndex], orderedIds[adjacentOrderIndex]] = [
+      orderedIds[adjacentOrderIndex]!,
+      orderedIds[selectedOrderIndex]!,
+    ];
+    onReorder?.(orderedIds);
   };
 
   const closeComposer = (): void => {
@@ -341,6 +361,14 @@ export function Dashboard({
     }
     if (key.meta && input === "?") {
       setHelpVisible(true);
+      return;
+    }
+    if (key.shift && key.downArrow) {
+      reorderSelection(1);
+      return;
+    }
+    if (key.shift && key.upArrow) {
+      reorderSelection(-1);
       return;
     }
     if (key.downArrow) {

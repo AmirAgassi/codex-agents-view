@@ -17,10 +17,6 @@ const STATE_GROUPS: ReadonlyArray<{
   { id: "completed", label: "Completed" },
 ];
 
-function updatedAt(record: SessionRecord): number {
-  return record.lastChangedAt || record.thread.recencyAt || record.thread.updatedAt;
-}
-
 export function buildDashboardModel(
   state: DashboardState,
   preferences: Preferences,
@@ -45,7 +41,8 @@ export function buildDashboardModel(
       if (rightRank === undefined) return -1;
       return leftRank - rightRank;
     }
-    return updatedAt(right.record) - updatedAt(left.record);
+    return left.record.thread.createdAt - right.record.thread.createdAt ||
+      left.id.localeCompare(right.id);
   });
 
   const counts: DashboardCounts = {
