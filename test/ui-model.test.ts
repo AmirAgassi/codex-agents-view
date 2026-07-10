@@ -60,7 +60,7 @@ describe("dashboard presentation model", () => {
     expect(model.items.map((item) => item.id)).toEqual(["newest", "first", "second"]);
   });
 
-  it("puts pinned sessions last in pinning order", () => {
+  it("puts the pinned section first while preserving pinning order", () => {
     const firstPinned = historicalSession("first-pinned", 300);
     const secondPinned = historicalSession("second-pinned", 100);
     const regular = historicalSession("regular", 200);
@@ -75,8 +75,8 @@ describe("dashboard presentation model", () => {
       },
     );
 
-    expect(model.sections.map((section) => section.label)).toEqual(["Completed", "Pinned"]);
-    expect(model.sections.at(-1)?.items.map((item) => item.id)).toEqual([
+    expect(model.sections.map((section) => section.label)).toEqual(["Pinned", "Completed"]);
+    expect(model.sections[0]?.items.map((item) => item.id)).toEqual([
       "first-pinned",
       "second-pinned",
     ]);

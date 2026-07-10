@@ -123,10 +123,10 @@ describe("Dashboard selection", () => {
       />,
     );
     const lines = output.split("\n");
-    const pinnedHeading = lines.findIndex((line) => line.includes("Pinned"));
+    const completedHeading = lines.findIndex((line) => line.includes("Completed"));
 
-    expect(pinnedHeading).toBeGreaterThan(0);
-    expect(lines[pinnedHeading - 1]).toBe("");
+    expect(completedHeading).toBeGreaterThan(0);
+    expect(lines[completedHeading - 1]).toBe("");
   });
 
   it("restores the attached row after an empty loading render", async () => {

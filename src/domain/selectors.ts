@@ -6,10 +6,10 @@ import type {
 } from "./types.js";
 
 export const SESSION_GROUP_ORDER: readonly SessionGroup[] = [
+  "pinned",
   "needsInput",
   "working",
   "completed",
-  "pinned",
 ];
 
 function normalizedText(value: string): string {

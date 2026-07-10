@@ -68,6 +68,10 @@ export function buildDashboardModel(
   const unpinned = items.filter((item) => !item.pinned);
   const sections: SessionSection[] = [];
 
+  if (pinned.length > 0) {
+    sections.push({ id: "pinned", label: "Pinned", items: pinned });
+  }
+
   if (preferences.groupBy === "cwd") {
     const cwdGroups = new Map<string, SessionListItem[]>();
     for (const item of unpinned) {
@@ -86,10 +90,6 @@ export function buildDashboardModel(
         sections.push({ id: group.id, label: group.label, items: groupItems });
       }
     }
-  }
-
-  if (pinned.length > 0) {
-    sections.push({ id: "pinned", label: "Pinned", items: pinned });
   }
 
   return { counts, sections, items: sections.flatMap((section) => section.items) };
