@@ -221,6 +221,7 @@ export async function attachToThread(
     cwd?: string;
     dangerouslyBypassApprovalsAndSandbox?: boolean;
     env?: NodeJS.ProcessEnv;
+    initialInput?: string;
   } = {},
 ): Promise<number> {
   const stdin = process.stdin;
@@ -243,6 +244,7 @@ export async function attachToThread(
         env: ptyEnvironment(options.env ?? process.env),
       },
     );
+    if (options.initialInput) child.write(options.initialInput);
   } catch (error) {
     throw error instanceof Error ? error : new Error(String(error));
   }

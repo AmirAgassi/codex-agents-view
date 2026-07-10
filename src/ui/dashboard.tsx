@@ -228,12 +228,7 @@ export function Dashboard({
     } else if (composer.mode === "rename" && composer.targetId) {
       onRename?.(composer.targetId, value);
     } else if (composer.mode === "new") {
-      const dispatched = onDispatch?.(value, cwd ?? preferences.defaultCwd);
-      if (dispatched instanceof Promise) {
-        void dispatched.then((threadId) => {
-          if (threadId) onAttach?.(threadId);
-        });
-      }
+      void onDispatch?.(value, cwd ?? preferences.defaultCwd);
     }
     closeComposer();
   };
@@ -259,6 +254,17 @@ export function Dashboard({
     if (composer.active) {
       if (key.escape) {
         closeComposer();
+        return;
+      }
+      if (
+        composer.mode === "new" &&
+        composer.value.length === 0 &&
+        (key.leftArrow || key.rightArrow || key.return) &&
+        selectedId
+      ) {
+        if (isBusy) return;
+        closeComposer();
+        onAttach?.(selectedId);
         return;
       }
       if (key.return) {
@@ -292,6 +298,10 @@ export function Dashboard({
         setComposer((current) => moveCursor(current, Array.from(current.value).length));
         return;
       }
+      if (key.backspace && (key.ctrl || key.meta)) {
+        setComposer(deleteWordBackward);
+        return;
+      }
       if (key.backspace) {
         setComposer(deleteBackward);
         return;
@@ -308,25 +318,36 @@ export function Dashboard({
         setComposer(deleteWordBackward);
         return;
       }
+      if (
+        input === "/" &&
+        composer.mode === "new" &&
+        composer.value.length === 0 &&
+        selectedId
+      ) {
+        if (isBusy) return;
+        closeComposer();
+        onAttach?.(selectedId, "/");
+        return;
+      }
       if (input && !key.ctrl && !key.meta && !key.super) {
         setComposer((current) => insertText(current, input));
       }
       return;
     }
 
-    if (input === "q") {
+    if (key.meta && input === "q") {
       onExit?.();
       return;
     }
-    if (input === "?") {
+    if (key.meta && input === "?") {
       setHelpVisible(true);
       return;
     }
-    if (key.downArrow || input === "j") {
+    if (key.downArrow) {
       chooseIndex(selectedIndex + 1);
       return;
     }
-    if (key.upArrow || input === "k") {
+    if (key.upArrow) {
       chooseIndex(selectedIndex - 1);
       return;
     }
@@ -346,20 +367,20 @@ export function Dashboard({
       chooseIndex(dashboardModel.items.length - 1);
       return;
     }
-    if ((key.return || key.rightArrow) && selectedId) {
+    if ((key.return || key.leftArrow || key.rightArrow) && selectedId) {
       if (isBusy) return;
       onAttach?.(selectedId);
       return;
     }
     if (isBusy) return;
-    if (input === "v" && selectedId) {
+    if (input === "/" && selectedId && !key.ctrl && !key.meta && !key.super) {
+      onAttach?.(selectedId, "/");
+      return;
+    }
+    if (key.meta && input === "v" && selectedId) {
       const opening = peekedId !== selectedId;
       setPeekedId(opening ? selectedId : undefined);
       if (opening) onSelectionChange?.(selected);
-      return;
-    }
-    if (input === "n") {
-      beginComposer("new");
       return;
     }
     if (input === " " && selectedId) {
@@ -378,49 +399,61 @@ export function Dashboard({
       beginComposer("reply", selectedId);
       return;
     }
-    if (input === "p" && selectedId) {
+    if (key.meta && input === "p" && selectedId) {
       onPinToggle?.(selectedId, !preferences.pinnedThreadIds.includes(selectedId));
       return;
     }
-    if (input === "e" && selectedId && selected) {
+    if (key.meta && input === "e" && selectedId && selected) {
       beginComposer("rename", selectedId, undefined, sessionName(selected));
       return;
     }
-    if (input === "z" && selectedId) {
+    if (key.meta && input === "z" && selectedId) {
       onArchive?.(selectedId);
       return;
     }
-    if (input === "x" && selectedId) {
+    if (key.meta && input === "x" && selectedId) {
       onInterrupt?.(selectedId);
       return;
     }
-    if (input === "o" && selectedId) {
+    if (key.meta && input === "o" && selectedId) {
       onAttach?.(selectedId);
       return;
     }
-    if (input === "r") {
+    if (key.meta && input === "r") {
       onRefresh?.();
       return;
     }
 
-    if (!selectedRequest) return;
-    const approval = isApprovalRequest(selectedRequest);
-    const hasQuestions = parseQuestions(selectedRequest).length > 0;
-    if (approval && input === "a") {
-      resolveDecision(selectedRequest, "accept");
-    } else if (approval && input === "s") {
-      resolveDecision(selectedRequest, "acceptForSession");
-    } else if (!hasQuestions && input === "d") {
-      resolveDecision(selectedRequest, "decline");
-    } else if (!hasQuestions && input === "c") {
-      resolveDecision(selectedRequest, "cancel");
+    if (selectedRequest && key.meta) {
+      const approval = isApprovalRequest(selectedRequest);
+      const hasQuestions = parseQuestions(selectedRequest).length > 0;
+      if (approval && input === "a") {
+        resolveDecision(selectedRequest, "accept");
+        return;
+      }
+      if (approval && input === "s") {
+        resolveDecision(selectedRequest, "acceptForSession");
+        return;
+      }
+      if (!hasQuestions && input === "d") {
+        resolveDecision(selectedRequest, "decline");
+        return;
+      }
+      if (!hasQuestions && input === "c") {
+        resolveDecision(selectedRequest, "cancel");
+        return;
+      }
+    }
+
+    if (input && !key.ctrl && !key.meta && !key.super) {
+      beginComposer("new", undefined, undefined, input);
     }
   });
 
   if (terminalWidth < 50 || terminalHeight < 14) {
     return (
       <Box width={terminalWidth} height={terminalHeight} alignItems="center" justifyContent="center">
-        <Text color="yellow">Terminal too small · resize to at least 50×14 · q quits</Text>
+        <Text color="yellow">Terminal too small · resize to at least 50×14 · ctrl+c quits</Text>
       </Box>
     );
   }

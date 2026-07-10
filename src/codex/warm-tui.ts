@@ -19,6 +19,7 @@ export interface WarmAttachOptions {
   cwd?: string;
   dangerouslyBypassApprovalsAndSandbox?: boolean;
   env?: NodeJS.ProcessEnv;
+  initialInput?: string;
 }
 
 export interface WarmAttachResult {
@@ -263,6 +264,18 @@ export class WarmNativeTuiManager {
     const name = tmuxSessionName(threadId);
     try {
       await this.#ensureSession(threadId, attachOptions);
+      if (attachOptions.initialInput) {
+        const seeded = await this.#run([
+          "send-keys",
+          "-t",
+          `=${name}:`,
+          "-l",
+          attachOptions.initialInput,
+        ]);
+        if (seeded.exitCode !== 0) {
+          throw new Error(seeded.stderr.trim() || "Could not seed native Codex input");
+        }
+      }
       await this.#touch(name);
       await this.#prune(name);
       await this.#run([

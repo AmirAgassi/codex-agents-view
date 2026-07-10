@@ -124,6 +124,14 @@ describe("warm native Codex TUI manager", () => {
     expect(warmTmux.calls.find((call) => call[0] === "new-session")).toContain(
       "--dangerously-bypass-approvals-and-sandbox",
     );
+    await warmManager.attach("thread-a", { cwd: "/tmp", initialInput: "/" });
+    expect(warmTmux.calls).toContainEqual([
+      "send-keys",
+      "-t",
+      `=${tmuxSessionName("thread-a")}:`,
+      "-l",
+      "/",
+    ]);
 
     const coldTmux = new FakeTmux();
     coldTmux.available = false;
@@ -136,10 +144,13 @@ describe("warm native Codex TUI manager", () => {
       coldAttach,
     });
 
-    await coldManager.attach("thread-b", { cwd: "/tmp" });
+    await coldManager.attach("thread-b", { cwd: "/tmp", initialInput: "/" });
     expect(coldAttach).toHaveBeenCalledWith(
       "thread-b",
-      expect.objectContaining({ dangerouslyBypassApprovalsAndSandbox: true }),
+      expect.objectContaining({
+        dangerouslyBypassApprovalsAndSandbox: true,
+        initialInput: "/",
+      }),
     );
   });
 

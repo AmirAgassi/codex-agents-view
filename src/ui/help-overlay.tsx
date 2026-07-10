@@ -2,24 +2,26 @@ import React, { memo } from "react";
 import { Box, Text } from "ink";
 
 const SHORTCUTS: ReadonlyArray<readonly [string, string]> = [
-  ["j / ↓", "next session"],
-  ["k / ↑", "previous session"],
-  ["→ / enter", "open native Codex chat"],
+  ["type", "draft and dispatch a new task"],
+  ["↑ / ↓", "move between sessions"],
+  ["← / → / enter", "open chat when draft is empty"],
+  ["/", "open native Codex slash commands"],
   ["shift+← / ^B", "park native chat; keep it warm"],
-  ["v", "peek at selected session"],
-  ["n", "dispatch a new task"],
   ["space", "reply or answer input"],
-  ["a", "allow request once"],
-  ["s", "allow for this session"],
-  ["d / c", "decline / cancel request"],
-  ["x", "interrupt working session"],
-  ["e", "rename selected session"],
-  ["z", "archive selected session"],
-  ["p", "pin or unpin session"],
-  ["o", "attach in native Codex"],
-  ["r", "refresh sessions"],
+  ["ctrl/alt+⌫", "delete previous word"],
+  ["alt+v", "peek at selected session"],
+  ["alt+a", "allow request once"],
+  ["alt+s", "allow for this session"],
+  ["alt+d / alt+c", "decline / cancel request"],
+  ["alt+x", "interrupt working session"],
+  ["alt+e", "rename selected session"],
+  ["alt+z", "archive selected session"],
+  ["alt+p", "pin or unpin session"],
+  ["alt+o", "attach in native Codex"],
+  ["alt+r", "refresh sessions"],
   ["esc", "close panel or cancel input"],
-  ["q / ctrl+c", "quit"],
+  ["alt+?", "show these shortcuts"],
+  ["ctrl+c", "quit"],
 ];
 
 interface HelpOverlayProps {
@@ -50,7 +52,7 @@ function HelpOverlayComponent({ width, height }: HelpOverlayProps): React.JSX.El
       <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={2} paddingY={1}>
         <Box justifyContent="space-between" marginBottom={1}>
           <Text bold color="magenta">Keyboard shortcuts</Text>
-          <Text dimColor>? or esc to close</Text>
+          <Text dimColor>alt+? or esc to close</Text>
         </Box>
         <Box columnGap={4}>
           {columns.map((column, columnIndex) => (

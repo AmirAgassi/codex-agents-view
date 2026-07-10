@@ -13,7 +13,7 @@ This is an unofficial community project and is not affiliated with or endorsed b
 
 - Sessions grouped into pinned, awaiting input, working, and completed
 - Live turn, tool, plan, diff, output, and status events
-- Dispatch from the dashboard with isolated Git worktrees by default
+- Type to dispatch from the dashboard with isolated Git worktrees by default; new tasks stay in Agents View and run in the background
 - Enter the installed native Codex TUI with its complete history, slash commands, attachments, modes, approvals, and future features intact
 - Preload active or pinned native chats and retain up to three warm TUIs so MCP servers initialize once
 - Detach from a native chat while its turn keeps running, then open or manage another session
@@ -70,22 +70,24 @@ This grants Codex full access to your machine. Use it only in an environment you
 
 | Key | Action |
 |---|---|
-| `j` / `k`, `↑` / `↓` | Move between sessions |
-| `→` / `Enter` | Open the session in the native Codex TUI |
+| Type | Draft and dispatch a new task |
+| `↑` / `↓` | Move between sessions |
+| `←` / `→` / `Enter` | Open the session in the native Codex TUI when the draft is empty |
+| `/` | Open the selected chat with `/` in the native Codex composer |
 | `Shift+←` / `Ctrl+B` | Detach from the native chat and return (used inside Codex) |
-| `v` | Peek at recent activity |
-| `n` | Dispatch a new session |
 | `Space` | Reply or answer a pending question |
-| `a` / `s` | Allow once / allow for the session |
-| `d` / `c` | Decline / cancel a request |
-| `x` | Interrupt the active turn |
-| `e` | Rename the session |
-| `z` | Archive the session |
-| `p` | Pin or unpin the session |
-| `o` | Open the session in native Codex |
-| `r` | Refresh |
-| `?` | Show all shortcuts |
-| `q` / `Ctrl+C` | Exit the dashboard; agents keep running |
+| `Ctrl+Backspace` / `Option+Backspace` | Delete the previous word while typing |
+| `Alt+V` | Peek at recent activity |
+| `Alt+A` / `Alt+S` | Allow once / allow for the session |
+| `Alt+D` / `Alt+C` | Decline / cancel a request |
+| `Alt+X` | Interrupt the active turn |
+| `Alt+E` | Rename the session |
+| `Alt+Z` | Archive the session |
+| `Alt+P` | Pin or unpin the session |
+| `Alt+O` | Open the session in native Codex |
+| `Alt+R` | Refresh |
+| `Alt+?` | Show all shortcuts |
+| `Ctrl+C` | Exit the dashboard; agents keep running |
 
 Once attached, the child process is the regular Codex TUI—not a reimplementation. With tmux
 available, Agents View parks that exact TUI on detach, including its screen, draft, modal, scroll

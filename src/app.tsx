@@ -43,7 +43,7 @@ const ROOT_SOURCE_KINDS: NonNullable<ThreadListParams["sourceKinds"]> = [
 
 export type AppOutcome =
   | { type: "exit" }
-  | { type: "attach"; threadId: string; cwd: string };
+  | { type: "attach"; threadId: string; cwd: string; initialInput?: string };
 
 export interface AgentViewAppProps {
   client: CodexClient;
@@ -677,7 +677,7 @@ export function AgentViewApp({
   );
 
   const handleAttach = useCallback(
-    (threadId: string): void => {
+    (threadId: string, initialInput?: string): void => {
       if (attachPending.current || finished.current) return;
       attachPending.current = true;
       retainedAttachThreadId.current = threadId;
@@ -687,7 +687,7 @@ export function AgentViewApp({
       void ensureClientConnected()
         .then(() => ensureThreadSubscribed(threadId))
         .catch(() => undefined)
-        .finally(() => finish({ type: "attach", threadId, cwd }));
+        .finally(() => finish({ type: "attach", threadId, cwd, initialInput }));
     },
     [ensureClientConnected, ensureThreadSubscribed, finish, options.cwd],
   );

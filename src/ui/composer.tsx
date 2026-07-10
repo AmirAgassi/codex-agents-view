@@ -48,7 +48,7 @@ function placeholder(
   targetName: string | undefined,
   questionLabel: string | undefined,
 ): string {
-  if (!active) return "press n for a new task · space to reply";
+  if (!active) return "type a task · / for native commands · space to reply";
   if (mode === "reply") return `reply to ${targetName ?? "selected session"}`;
   if (mode === "answer") return questionLabel ?? "answer the question";
   if (mode === "rename") return `rename ${targetName ?? "selected session"}`;

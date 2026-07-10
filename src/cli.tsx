@@ -150,7 +150,10 @@ async function main(): Promise<void> {
 
       selectedThreadId = outcome.threadId;
       try {
-        const result = await nativeTuis.attach(outcome.threadId, { cwd: outcome.cwd });
+        const result = await nativeTuis.attach(outcome.threadId, {
+          cwd: outcome.cwd,
+          initialInput: outcome.initialInput,
+        });
         if (result.exitCode !== 0) {
           process.stderr.write(`Codex attach exited with status ${result.exitCode}\n`);
         }

@@ -8,6 +8,7 @@ import { DEFAULT_PREFERENCES, type DashboardState } from "../src/domain/types.js
 import { Dashboard } from "../src/ui/dashboard.js";
 import { buildDashboardModel } from "../src/ui/model.js";
 import { SessionList } from "../src/ui/session-list.js";
+import type { DashboardProps } from "../src/ui/types.js";
 
 const instances: Instance[] = [];
 
@@ -67,7 +68,8 @@ function state(ids: string[]): DashboardState {
 function mount(
   dashboardState: DashboardState,
   initialSelectedThreadId: string | undefined,
-  onAttach: (threadId: string) => void,
+  onAttach: (threadId: string, initialInput?: string) => void,
+  props: Pick<DashboardProps, "onDispatch"> = {},
 ) {
   const stdin = inputStream();
   const stdout = outputStream();
@@ -80,6 +82,7 @@ function mount(
       }}
       initialSelectedThreadId={initialSelectedThreadId}
       onAttach={onAttach}
+      {...props}
     />
   );
   const instance = render(view(dashboardState), {
@@ -152,5 +155,44 @@ describe("Dashboard selection", () => {
     restored.stdin.write("\r");
     await restored.instance.waitUntilRenderFlush();
     expect(restoredAttach).toHaveBeenCalledWith("third");
+  });
+
+  it("types a new task immediately and deletes words with ctrl+backspace", async () => {
+    const onDispatch = vi.fn();
+    const onAttach = vi.fn();
+    const dashboard = mount(state(["first"]), undefined, onAttach, { onDispatch });
+    await dashboard.instance.waitUntilRenderFlush();
+
+    dashboard.stdin.write("hello world");
+    await dashboard.instance.waitUntilRenderFlush();
+    dashboard.stdin.write("\u001b[127;5u");
+    await dashboard.instance.waitUntilRenderFlush();
+    dashboard.stdin.write("\r");
+    await dashboard.instance.waitUntilRenderFlush();
+
+    expect(onDispatch).toHaveBeenCalledWith("hello", undefined);
+    expect(onAttach).not.toHaveBeenCalled();
+  });
+
+  it("opens the selected native composer with a slash command seed", async () => {
+    const onAttach = vi.fn<(threadId: string, initialInput?: string) => void>();
+    const dashboard = mount(state(["first"]), undefined, onAttach);
+    await dashboard.instance.waitUntilRenderFlush();
+
+    dashboard.stdin.write("/");
+    await dashboard.instance.waitUntilRenderFlush();
+
+    expect(onAttach).toHaveBeenCalledWith("first", "/");
+  });
+
+  it("opens the selected chat with left arrow while the draft is empty", async () => {
+    const onAttach = vi.fn<(threadId: string, initialInput?: string) => void>();
+    const dashboard = mount(state(["first"]), undefined, onAttach);
+    await dashboard.instance.waitUntilRenderFlush();
+
+    dashboard.stdin.write("\u001b[D");
+    await dashboard.instance.waitUntilRenderFlush();
+
+    expect(onAttach).toHaveBeenCalledWith("first");
   });
 });

@@ -49,16 +49,16 @@ function FooterComponent({
             {connectionMessage}
           </Text>
         ) : composerActive ? (
-          <Text dimColor>enter submit · esc cancel · ctrl+u clear</Text>
+          <Text dimColor>enter submit · ctrl/alt+⌫ delete word · esc cancel</Text>
         ) : (
           <Text dimColor>
-            {hasPendingRequest ? "a allow · d decline · " : ""}
-            {hasSelection ? "→/enter native chat · space quick reply · p pin · " : ""}
-            n new · ? shortcuts
+            {hasPendingRequest ? "alt+a allow · alt+d decline · " : ""}
+            {hasSelection ? "←/→/enter chat · / commands · space reply · " : ""}
+            type new task · alt+? shortcuts
           </Text>
         )}
       </Box>
-      <Text dimColor> q quit</Text>
+      <Text dimColor> ctrl+c quit</Text>
     </Box>
   );
 }
