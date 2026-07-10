@@ -6,10 +6,10 @@ import type {
 } from "./types.js";
 
 export const SESSION_GROUP_ORDER: readonly SessionGroup[] = [
-  "pinned",
   "needsInput",
   "working",
   "completed",
+  "pinned",
 ];
 
 function normalizedText(value: string): string {
@@ -143,11 +143,11 @@ function compareWithOrder(
   const leftOrder = order.get(left.thread.id);
   const rightOrder = order.get(right.thread.id);
   if (leftOrder !== undefined || rightOrder !== undefined) {
-    if (leftOrder === undefined) return 1;
-    if (rightOrder === undefined) return -1;
+    if (leftOrder === undefined) return -1;
+    if (rightOrder === undefined) return 1;
     if (leftOrder !== rightOrder) return leftOrder - rightOrder;
   }
-  const launchOrder = left.thread.createdAt - right.thread.createdAt;
+  const launchOrder = right.thread.createdAt - left.thread.createdAt;
   return launchOrder || left.thread.id.localeCompare(right.thread.id);
 }
 

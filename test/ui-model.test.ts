@@ -45,7 +45,41 @@ describe("dashboard presentation model", () => {
       DEFAULT_PREFERENCES,
     );
 
-    expect(model.items.map((item) => item.id)).toEqual(["older", "newer"]);
+    expect(model.items.map((item) => item.id)).toEqual(["newer", "older"]);
+  });
+
+  it("puts newly launched sessions above a persisted manual order", () => {
+    const first = historicalSession("first", 100);
+    const second = historicalSession("second", 200);
+    const newest = historicalSession("newest", 300);
+    const model = buildDashboardModel(
+      { connection: "connected", sessions: { first, second, newest } },
+      { ...DEFAULT_PREFERENCES, order: ["first", "second"] },
+    );
+
+    expect(model.items.map((item) => item.id)).toEqual(["newest", "first", "second"]);
+  });
+
+  it("puts pinned sessions last in pinning order", () => {
+    const firstPinned = historicalSession("first-pinned", 300);
+    const secondPinned = historicalSession("second-pinned", 100);
+    const regular = historicalSession("regular", 200);
+    const model = buildDashboardModel(
+      {
+        connection: "connected",
+        sessions: { regular, "first-pinned": firstPinned, "second-pinned": secondPinned },
+      },
+      {
+        ...DEFAULT_PREFERENCES,
+        pinnedThreadIds: ["first-pinned", "second-pinned"],
+      },
+    );
+
+    expect(model.sections.map((section) => section.label)).toEqual(["Completed", "Pinned"]);
+    expect(model.sections.at(-1)?.items.map((item) => item.id)).toEqual([
+      "first-pinned",
+      "second-pinned",
+    ]);
   });
 
   it("strips terminal control characters from model-controlled text", () => {

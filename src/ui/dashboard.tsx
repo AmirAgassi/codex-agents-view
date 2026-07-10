@@ -10,6 +10,7 @@ import { buildDashboardModel } from "./model.js";
 import { PeekPanel } from "./peek-panel.js";
 import { RequestPanel } from "./request-panel.js";
 import { SessionList } from "./session-list.js";
+import { completeSlashCommand, isLeadingSlashCommand } from "./slash-commands.js";
 import {
   isApprovalRequest,
   parseQuestions,
@@ -243,6 +244,11 @@ export function Dashboard({
       advanceAnswer(value);
       return;
     }
+    if (composer.mode === "new" && selectedId && isLeadingSlashCommand(value)) {
+      onAttach?.(selectedId, value);
+      closeComposer();
+      return;
+    }
     if (composer.mode === "reply" && composer.targetId) {
       onSteer?.(composer.targetId, value);
     } else if (composer.mode === "rename" && composer.targetId) {
@@ -265,9 +271,12 @@ export function Dashboard({
       onExit?.();
       return;
     }
+    const actionModifier = key.ctrl || key.meta;
 
     if (helpVisible) {
-      if (key.escape || input === "?" || input === "q") setHelpVisible(false);
+      if (key.escape || (key.ctrl && input === "g") || (key.meta && input === "?")) {
+        setHelpVisible(false);
+      }
       return;
     }
 
@@ -289,6 +298,13 @@ export function Dashboard({
       }
       if (key.return) {
         submitComposer();
+        return;
+      }
+      if (key.tab && composer.mode === "new") {
+        setComposer((current) => {
+          const completed = completeSlashCommand(current.value, current.cursor);
+          return completed ? { ...current, ...completed } : current;
+        });
         return;
       }
       if (
@@ -338,28 +354,13 @@ export function Dashboard({
         setComposer(deleteWordBackward);
         return;
       }
-      if (
-        input === "/" &&
-        composer.mode === "new" &&
-        composer.value.length === 0 &&
-        selectedId
-      ) {
-        if (isBusy) return;
-        closeComposer();
-        onAttach?.(selectedId, "/");
-        return;
-      }
       if (input && !key.ctrl && !key.meta && !key.super) {
         setComposer((current) => insertText(current, input));
       }
       return;
     }
 
-    if (key.meta && input === "q") {
-      onExit?.();
-      return;
-    }
-    if (key.meta && input === "?") {
+    if ((key.ctrl && input === "g") || (key.meta && input === "?")) {
       setHelpVisible(true);
       return;
     }
@@ -401,11 +402,7 @@ export function Dashboard({
       return;
     }
     if (isBusy) return;
-    if (input === "/" && selectedId && !key.ctrl && !key.meta && !key.super) {
-      onAttach?.(selectedId, "/");
-      return;
-    }
-    if (key.meta && input === "v" && selectedId) {
+    if (actionModifier && input === "v" && selectedId) {
       const opening = peekedId !== selectedId;
       setPeekedId(opening ? selectedId : undefined);
       if (opening) onSelectionChange?.(selected);
@@ -427,32 +424,32 @@ export function Dashboard({
       beginComposer("reply", selectedId);
       return;
     }
-    if (key.meta && input === "p" && selectedId) {
+    if (actionModifier && input === "p" && selectedId) {
       onPinToggle?.(selectedId, !preferences.pinnedThreadIds.includes(selectedId));
       return;
     }
-    if (key.meta && input === "e" && selectedId && selected) {
+    if (actionModifier && input === "e" && selectedId && selected) {
       beginComposer("rename", selectedId, undefined, sessionName(selected));
       return;
     }
-    if (key.meta && input === "z" && selectedId) {
+    if (actionModifier && input === "z" && selectedId) {
       onArchive?.(selectedId);
       return;
     }
-    if (key.meta && input === "x" && selectedId) {
+    if (actionModifier && input === "x" && selectedId) {
       onInterrupt?.(selectedId);
       return;
     }
-    if (key.meta && input === "o" && selectedId) {
+    if (actionModifier && input === "o" && selectedId) {
       onAttach?.(selectedId);
       return;
     }
-    if (key.meta && input === "r") {
+    if (actionModifier && input === "r") {
       onRefresh?.();
       return;
     }
 
-    if (selectedRequest && key.meta) {
+    if (selectedRequest && actionModifier) {
       const approval = isApprovalRequest(selectedRequest);
       const hasQuestions = parseQuestions(selectedRequest).length > 0;
       if (approval && input === "a") {
@@ -467,7 +464,7 @@ export function Dashboard({
         resolveDecision(selectedRequest, "decline");
         return;
       }
-      if (!hasQuestions && input === "c") {
+      if (!hasQuestions && (input === "k" || (key.meta && input === "c"))) {
         resolveDecision(selectedRequest, "cancel");
         return;
       }

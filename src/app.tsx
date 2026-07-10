@@ -652,7 +652,13 @@ export function AgentViewApp({
     const ids = new Set(current.pinnedThreadIds);
     if (pinned) ids.add(threadId);
     else ids.delete(threadId);
-    persistPreferences({ ...current, pinnedThreadIds: [...ids] });
+    persistPreferences({
+      ...current,
+      pinnedThreadIds: [...ids],
+      order: pinned
+        ? current.order.filter((orderedThreadId) => orderedThreadId !== threadId)
+        : current.order,
+    });
   }, [persistPreferences]);
 
   const handleReorder = useCallback((orderedThreadIds: string[]): void => {

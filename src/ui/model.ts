@@ -37,11 +37,11 @@ export function buildDashboardModel(
     const leftRank = explicitOrder.get(left.id);
     const rightRank = explicitOrder.get(right.id);
     if (leftRank !== undefined || rightRank !== undefined) {
-      if (leftRank === undefined) return 1;
-      if (rightRank === undefined) return -1;
+      if (leftRank === undefined) return -1;
+      if (rightRank === undefined) return 1;
       return leftRank - rightRank;
     }
-    return left.record.thread.createdAt - right.record.thread.createdAt ||
+    return right.record.thread.createdAt - left.record.thread.createdAt ||
       left.id.localeCompare(right.id);
   });
 
@@ -52,13 +52,21 @@ export function buildDashboardModel(
   };
   for (const item of items) counts[item.semanticGroup] += 1;
 
-  const pinned = items.filter((item) => item.pinned);
+  const pinnedOrder = new Map(
+    preferences.pinnedThreadIds.map((threadId, index) => [threadId, index] as const),
+  );
+  const pinned = items.filter((item) => item.pinned).sort((left, right) => {
+    const leftRank = explicitOrder.get(left.id);
+    const rightRank = explicitOrder.get(right.id);
+    if (leftRank !== undefined || rightRank !== undefined) {
+      if (leftRank === undefined) return 1;
+      if (rightRank === undefined) return -1;
+      return leftRank - rightRank;
+    }
+    return (pinnedOrder.get(left.id) ?? 0) - (pinnedOrder.get(right.id) ?? 0);
+  });
   const unpinned = items.filter((item) => !item.pinned);
   const sections: SessionSection[] = [];
-
-  if (pinned.length > 0) {
-    sections.push({ id: "pinned", label: "Pinned", items: pinned });
-  }
 
   if (preferences.groupBy === "cwd") {
     const cwdGroups = new Map<string, SessionListItem[]>();
@@ -78,6 +86,10 @@ export function buildDashboardModel(
         sections.push({ id: group.id, label: group.label, items: groupItems });
       }
     }
+  }
+
+  if (pinned.length > 0) {
+    sections.push({ id: "pinned", label: "Pinned", items: pinned });
   }
 
   return { counts, sections, items: sections.flatMap((section) => section.items) };

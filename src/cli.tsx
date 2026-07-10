@@ -11,6 +11,7 @@ import {
   WarmNativeTuiManager,
 } from "./codex/index.js";
 import { loadPreferences } from "./state/preferences.js";
+import { discardPendingInput } from "./terminal-input.js";
 
 const SHUTDOWN_SIGNALS = ["SIGHUP", "SIGINT", "SIGQUIT", "SIGTERM"] as const;
 const SHUTDOWN_SIGNAL_NUMBERS: Record<(typeof SHUTDOWN_SIGNALS)[number], number> = {
@@ -163,6 +164,7 @@ async function main(): Promise<void> {
         );
       } finally {
         void client.unsubscribeThread(outcome.threadId).catch(() => undefined);
+        discardPendingInput();
       }
     }
   } finally {

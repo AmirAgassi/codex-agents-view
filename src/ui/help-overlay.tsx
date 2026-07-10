@@ -6,22 +6,21 @@ const SHORTCUTS: ReadonlyArray<readonly [string, string]> = [
   ["↑ / ↓", "move between sessions"],
   ["shift+↑ / ↓", "reorder within the section"],
   ["← / → / enter", "open chat when draft is empty"],
-  ["/", "open native Codex slash commands"],
+  ["/ + tab", "type and complete slash commands"],
   ["shift+← / ^B", "park native chat; keep it warm"],
   ["space", "reply or answer input"],
   ["ctrl/alt+⌫", "delete previous word"],
-  ["alt+v", "peek at selected session"],
-  ["alt+a", "allow request once"],
-  ["alt+s", "allow for this session"],
-  ["alt+d / alt+c", "decline / cancel request"],
-  ["alt+x", "interrupt working session"],
-  ["alt+e", "rename selected session"],
-  ["alt+z", "archive selected session"],
-  ["alt+p", "pin or unpin session"],
-  ["alt+o", "attach in native Codex"],
-  ["alt+r", "refresh sessions"],
+  ["ctrl+v", "peek at selected session"],
+  ["ctrl+a / s", "allow once / for session"],
+  ["ctrl+d / k", "decline / cancel request"],
+  ["ctrl+x", "interrupt working session"],
+  ["ctrl+e", "rename selected session"],
+  ["ctrl+z", "archive selected session"],
+  ["ctrl+p", "pin or unpin session"],
+  ["ctrl+o", "attach in native Codex"],
+  ["ctrl+r", "refresh sessions"],
   ["esc", "close panel or cancel input"],
-  ["alt+?", "show these shortcuts"],
+  ["ctrl+g", "show these shortcuts"],
   ["ctrl+c", "quit"],
 ];
 
@@ -53,14 +52,14 @@ function HelpOverlayComponent({ width, height }: HelpOverlayProps): React.JSX.El
       <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={2} paddingY={1}>
         <Box justifyContent="space-between" marginBottom={1}>
           <Text bold color="magenta">Keyboard shortcuts</Text>
-          <Text dimColor>alt+? or esc to close</Text>
+          <Text dimColor>ctrl+g or esc to close</Text>
         </Box>
         <Box columnGap={4}>
           {columns.map((column, columnIndex) => (
             <Box key={columnIndex} flexDirection="column" width={columnWidth}>
               {column.map(([shortcut, description]) => (
                 <Box key={shortcut}>
-                  <Box width={11} flexShrink={0} marginRight={1}>
+                  <Box width={13} flexShrink={0} marginRight={1}>
                     <Text bold color="cyan">{shortcut}</Text>
                   </Box>
                   <Text wrap="truncate-end">{description}</Text>

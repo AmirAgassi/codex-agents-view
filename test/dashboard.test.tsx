@@ -69,7 +69,7 @@ function mount(
   dashboardState: DashboardState,
   initialSelectedThreadId: string | undefined,
   onAttach: (threadId: string, initialInput?: string) => void,
-  props: Pick<DashboardProps, "onDispatch" | "onReorder"> = {},
+  props: Pick<DashboardProps, "onDispatch" | "onPinToggle" | "onReorder"> = {},
 ) {
   const stdin = inputStream();
   const stdout = outputStream();
@@ -123,10 +123,10 @@ describe("Dashboard selection", () => {
       />,
     );
     const lines = output.split("\n");
-    const completedHeading = lines.findIndex((line) => line.includes("Completed"));
+    const pinnedHeading = lines.findIndex((line) => line.includes("Pinned"));
 
-    expect(completedHeading).toBeGreaterThan(0);
-    expect(lines[completedHeading - 1]).toBe("");
+    expect(pinnedHeading).toBeGreaterThan(0);
+    expect(lines[pinnedHeading - 1]).toBe("");
   });
 
   it("restores the attached row after an empty loading render", async () => {
@@ -174,15 +174,32 @@ describe("Dashboard selection", () => {
     expect(onAttach).not.toHaveBeenCalled();
   });
 
-  it("opens the selected native composer with a slash command seed", async () => {
+  it("lets slash commands be typed and completed before opening the native composer", async () => {
     const onAttach = vi.fn<(threadId: string, initialInput?: string) => void>();
     const dashboard = mount(state(["first"]), undefined, onAttach);
     await dashboard.instance.waitUntilRenderFlush();
 
-    dashboard.stdin.write("/");
+    dashboard.stdin.write("/mo");
+    await dashboard.instance.waitUntilRenderFlush();
+    expect(onAttach).not.toHaveBeenCalled();
+
+    dashboard.stdin.write("\t");
+    await dashboard.instance.waitUntilRenderFlush();
+    dashboard.stdin.write("\r");
     await dashboard.instance.waitUntilRenderFlush();
 
-    expect(onAttach).toHaveBeenCalledWith("first", "/");
+    expect(onAttach).toHaveBeenCalledWith("first", "/model");
+  });
+
+  it("pins the selected session with ctrl+p", async () => {
+    const onPinToggle = vi.fn();
+    const dashboard = mount(state(["first"]), undefined, vi.fn(), { onPinToggle });
+    await dashboard.instance.waitUntilRenderFlush();
+
+    dashboard.stdin.write("\u0010");
+    await dashboard.instance.waitUntilRenderFlush();
+
+    expect(onPinToggle).toHaveBeenCalledWith("first", true);
   });
 
   it("opens the selected chat with left arrow while the draft is empty", async () => {
