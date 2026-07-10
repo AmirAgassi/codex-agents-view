@@ -141,9 +141,6 @@ export function Dashboard({
   const [composer, setComposer] = useState<ComposerState>(EMPTY_COMPOSER);
   const [completionIndex, setCompletionIndex] = useState(0);
   const [answerFlow, setAnswerFlow] = useState<AnswerFlow>();
-  const navigationRepeat = useRef<
-    { direction: -1 | 1; at: number; carry: number } | undefined
-  >(undefined);
 
   const currentItemIds = useMemo(
     () => dashboardModel.items.map((item) => item.id),
@@ -210,19 +207,6 @@ export function Dashboard({
       orderedIds[selectedOrderIndex]!,
     ];
     onReorder?.(orderedIds);
-  };
-
-  const acceleratedNavigationOffset = (direction: -1 | 1): number => {
-    const now = Date.now();
-    const previous = navigationRepeat.current;
-    if (!previous || previous.direction !== direction || now - previous.at > 250) {
-      navigationRepeat.current = { direction, at: now, carry: 0.5 };
-      return direction;
-    }
-    const carry = previous.carry + 0.5;
-    const step = 1 + Math.floor(carry);
-    navigationRepeat.current = { direction, at: now, carry: carry % 1 };
-    return direction * step;
   };
 
   const closeComposer = (): void => {
@@ -428,11 +412,11 @@ export function Dashboard({
       return;
     }
     if (key.downArrow) {
-      chooseIndex(selectedIndex + acceleratedNavigationOffset(1));
+      chooseIndex(selectedIndex + 1);
       return;
     }
     if (key.upArrow) {
-      chooseIndex(selectedIndex + acceleratedNavigationOffset(-1));
+      chooseIndex(selectedIndex - 1);
       return;
     }
     if (key.pageDown) {

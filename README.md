@@ -72,7 +72,7 @@ This grants Codex full access to your machine. Use it only in an environment you
 | Key | Action |
 |---|---|
 | Type | Draft and dispatch a new task |
-| `↑` / `↓` | Move between sessions; holding accelerates to 1.5× |
+| `↑` / `↓` | Move between sessions |
 | `Shift+↑` / `Shift+↓` | Reorder the selected session within its section |
 | `←` / `→` / `Enter` | Open the session in the native Codex TUI when the draft is empty |
 | `/`, then `Tab` | Type, highlight, and complete Codex slash commands; submitting a leading command opens it in the selected native chat |

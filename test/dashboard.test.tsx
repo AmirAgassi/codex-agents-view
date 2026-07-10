@@ -239,7 +239,7 @@ describe("Dashboard selection", () => {
     expect(onArchive).toHaveBeenCalledWith("first");
   });
 
-  it("accelerates rapid repeated arrow navigation to one and a half speed", async () => {
+  it("moves exactly one row for every repeated arrow event", async () => {
     const onAttach = vi.fn();
     const dashboard = mount(
       state(["first", "second", "third", "fourth", "fifth"]),
@@ -255,7 +255,7 @@ describe("Dashboard selection", () => {
     dashboard.stdin.write("\r");
     await dashboard.instance.waitUntilRenderFlush();
 
-    expect(onAttach).toHaveBeenCalledWith("fourth");
+    expect(onAttach).toHaveBeenCalledWith("third");
   });
 
   it("opens the selected chat with left arrow while the draft is empty", async () => {
