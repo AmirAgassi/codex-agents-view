@@ -15,6 +15,13 @@ describe("buildAttachArgs", () => {
       "unix://",
       "019abc-thread",
     ]);
+    expect(buildAttachArgs("019abc-thread", true)).toEqual([
+      "resume",
+      "--dangerously-bypass-approvals-and-sandbox",
+      "--remote",
+      "unix://",
+      "019abc-thread",
+    ]);
   });
 
   it("recognizes dedicated detach keys without stealing normal arrows", () => {

@@ -111,6 +111,38 @@ describe("warm native Codex TUI manager", () => {
     expect(configured.some((call) => call.includes("escape-time"))).toBe(false);
   });
 
+  it("passes skip-permissions mode to warm and cold native TUIs", async () => {
+    const warmTmux = new FakeTmux();
+    const warmManager = new WarmNativeTuiManager({
+      socketName: "warm-test",
+      dangerouslyBypassApprovalsAndSandbox: true,
+      runTmux: warmTmux.run,
+      attachTmux: warmTmux.attach,
+    });
+
+    await warmManager.warm({ threadId: "thread-a", cwd: "/tmp" });
+    expect(warmTmux.calls.find((call) => call[0] === "new-session")).toContain(
+      "--dangerously-bypass-approvals-and-sandbox",
+    );
+
+    const coldTmux = new FakeTmux();
+    coldTmux.available = false;
+    const coldAttach = vi.fn().mockResolvedValue(0);
+    const coldManager = new WarmNativeTuiManager({
+      socketName: "cold-test",
+      dangerouslyBypassApprovalsAndSandbox: true,
+      runTmux: coldTmux.run,
+      attachTmux: coldTmux.attach,
+      coldAttach,
+    });
+
+    await coldManager.attach("thread-b", { cwd: "/tmp" });
+    expect(coldAttach).toHaveBeenCalledWith(
+      "thread-b",
+      expect.objectContaining({ dangerouslyBypassApprovalsAndSandbox: true }),
+    );
+  });
+
   it("coalesces concurrent starts for the same thread", async () => {
     const tmux = new FakeTmux();
     const manager = new WarmNativeTuiManager({

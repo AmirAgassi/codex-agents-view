@@ -58,6 +58,14 @@ codex-agents --all
 Run `codex-agents --help` for model, approval, sandbox, and direct-checkout options.
 Agents View starts the managed local App Server daemon automatically.
 
+To skip all approvals and run without a sandbox in both the dashboard and native Codex TUI:
+
+```bash
+codex-agents --dangerously-bypass-approvals-and-sandbox
+```
+
+This grants Codex full access to your machine. Use it only in an environment you trust.
+
 ## Keyboard shortcuts
 
 | Key | Action |

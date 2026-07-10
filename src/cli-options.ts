@@ -12,6 +12,7 @@ export interface CliOptions {
   model?: string;
   approvalPolicy?: ApprovalPolicy;
   sandbox?: SandboxMode;
+  dangerouslyBypassApprovalsAndSandbox: boolean;
   help: boolean;
   version: boolean;
 }
@@ -36,6 +37,7 @@ export function parseCliOptions(args: string[], initialCwd = process.cwd()): Cli
     cwd: resolve(initialCwd),
     allProjects: false,
     useWorktrees: true,
+    dangerouslyBypassApprovalsAndSandbox: false,
     help: false,
     version: false,
   };
@@ -71,6 +73,10 @@ export function parseCliOptions(args: string[], initialCwd = process.cwd()): Cli
         index += 1;
         break;
       }
+      case "--dangerously-bypass-approvals-and-sandbox":
+        options.approvalPolicy = "never";
+        options.sandbox = "danger-full-access";
+        break;
       case "--sandbox":
       case "-s": {
         const value = takeValue(args, index, arg) as SandboxMode;
@@ -94,6 +100,9 @@ export function parseCliOptions(args: string[], initialCwd = process.cwd()): Cli
     }
   }
 
+  options.dangerouslyBypassApprovalsAndSandbox =
+    options.approvalPolicy === "never" && options.sandbox === "danger-full-access";
+
   return options;
 }
 
@@ -108,6 +117,8 @@ Options:
   -m, --model <model>    Override the configured Codex model for new sessions
       --approval <mode>  untrusted, on-request, or never
   -s, --sandbox <mode>   read-only, workspace-write, or danger-full-access
+      --dangerously-bypass-approvals-and-sandbox
+                         Skip approvals and sandboxing in dashboard and native chats
   -h, --help             Show help
   -V, --version          Show version
 

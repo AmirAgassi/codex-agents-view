@@ -56,8 +56,19 @@ function ensurePtyHelperExecutable(): void {
   }
 }
 
-export function buildAttachArgs(threadId: string): string[] {
-  return ["resume", "--remote", "unix://", threadId];
+export function buildAttachArgs(
+  threadId: string,
+  dangerouslyBypassApprovalsAndSandbox = false,
+): string[] {
+  return [
+    "resume",
+    ...(dangerouslyBypassApprovalsAndSandbox
+      ? ["--dangerously-bypass-approvals-and-sandbox"]
+      : []),
+    "--remote",
+    "unix://",
+    threadId,
+  ];
 }
 
 function isPressOrRepeat(eventType: string | undefined): boolean {
@@ -205,7 +216,12 @@ function ptyEnvironment(env: NodeJS.ProcessEnv): Record<string, string> {
  */
 export async function attachToThread(
   threadId: string,
-  options: { codexCommand?: string; cwd?: string; env?: NodeJS.ProcessEnv } = {},
+  options: {
+    codexCommand?: string;
+    cwd?: string;
+    dangerouslyBypassApprovalsAndSandbox?: boolean;
+    env?: NodeJS.ProcessEnv;
+  } = {},
 ): Promise<number> {
   const stdin = process.stdin;
   const stdout = process.stdout;
@@ -214,15 +230,19 @@ export async function attachToThread(
 
   try {
     ensurePtyHelperExecutable();
-    child = spawnPty(options.codexCommand ?? "codex", buildAttachArgs(threadId), {
-      name: process.env.TERM && process.env.TERM !== "dumb"
-        ? process.env.TERM
-        : "xterm-256color",
-      cols: Math.max(1, stdout.columns ?? 80),
-      rows: Math.max(1, stdout.rows ?? 24),
-      cwd: options.cwd,
-      env: ptyEnvironment(options.env ?? process.env),
-    });
+    child = spawnPty(
+      options.codexCommand ?? "codex",
+      buildAttachArgs(threadId, options.dangerouslyBypassApprovalsAndSandbox),
+      {
+        name: process.env.TERM && process.env.TERM !== "dumb"
+          ? process.env.TERM
+          : "xterm-256color",
+        cols: Math.max(1, stdout.columns ?? 80),
+        rows: Math.max(1, stdout.rows ?? 24),
+        cwd: options.cwd,
+        env: ptyEnvironment(options.env ?? process.env),
+      },
+    );
   } catch (error) {
     throw error instanceof Error ? error : new Error(String(error));
   }

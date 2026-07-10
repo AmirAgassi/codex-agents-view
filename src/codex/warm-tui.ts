@@ -17,6 +17,7 @@ export interface WarmThreadTarget {
 export interface WarmAttachOptions {
   codexCommand?: string;
   cwd?: string;
+  dangerouslyBypassApprovalsAndSandbox?: boolean;
   env?: NodeJS.ProcessEnv;
 }
 
@@ -45,6 +46,7 @@ export type ColdAttach = (
 export interface WarmNativeTuiManagerOptions {
   tmuxCommand?: string;
   codexCommand?: string;
+  dangerouslyBypassApprovalsAndSandbox?: boolean;
   socketName?: string;
   maxWarmSessions?: number;
   env?: NodeJS.ProcessEnv;
@@ -171,6 +173,7 @@ function terminalEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 export class WarmNativeTuiManager {
   readonly #tmuxCommand: string;
   readonly #codexCommand: string;
+  readonly #dangerouslyBypassApprovalsAndSandbox: boolean;
   readonly #socketName: string;
   readonly #maxWarmSessions: number;
   readonly #env: NodeJS.ProcessEnv;
@@ -187,6 +190,8 @@ export class WarmNativeTuiManager {
   constructor(options: WarmNativeTuiManagerOptions = {}) {
     this.#tmuxCommand = options.tmuxCommand ?? "tmux";
     this.#codexCommand = options.codexCommand ?? "codex";
+    this.#dangerouslyBypassApprovalsAndSandbox =
+      options.dangerouslyBypassApprovalsAndSandbox ?? false;
     this.#socketName = options.socketName ?? tmuxSocketName(options.env?.CODEX_HOME);
     this.#maxWarmSessions = Math.max(
       1,
@@ -218,6 +223,8 @@ export class WarmNativeTuiManager {
       await this.#ensureSession(target.threadId, {
         cwd: target.cwd,
         codexCommand: this.#codexCommand,
+        dangerouslyBypassApprovalsAndSandbox:
+          this.#dangerouslyBypassApprovalsAndSandbox,
         env: this.#env,
       });
       await this.#prune(tmuxSessionName(target.threadId));
@@ -240,16 +247,22 @@ export class WarmNativeTuiManager {
     if (this.#disposed) {
       throw new Error("The warm native TUI manager is closed");
     }
+    const attachOptions = {
+      ...options,
+      dangerouslyBypassApprovalsAndSandbox:
+        options.dangerouslyBypassApprovalsAndSandbox ??
+        this.#dangerouslyBypassApprovalsAndSandbox,
+    };
     if (!(await this.isAvailable())) {
       return {
-        exitCode: await this.#coldAttach(threadId, options),
+        exitCode: await this.#coldAttach(threadId, attachOptions),
         warm: false,
       };
     }
 
     const name = tmuxSessionName(threadId);
     try {
-      await this.#ensureSession(threadId, options);
+      await this.#ensureSession(threadId, attachOptions);
       await this.#touch(name);
       await this.#prune(name);
       await this.#run([
@@ -264,12 +277,12 @@ export class WarmNativeTuiManager {
       const attached = await this.#attachTmux(
         this.#tmuxCommand,
         [...this.baseArgs, "attach-session", "-t", `=${name}`],
-        terminalEnvironment(options.env ?? this.#env),
+        terminalEnvironment(attachOptions.env ?? this.#env),
       );
       if (attached.exitCode !== 0) {
         await this.#run(["kill-session", "-t", `=${name}`]);
         return {
-          exitCode: await this.#coldAttach(threadId, options),
+          exitCode: await this.#coldAttach(threadId, attachOptions),
           warm: false,
         };
       }
@@ -281,7 +294,7 @@ export class WarmNativeTuiManager {
         // The cold PTY fallback remains usable even if tmux itself disappeared.
       }
       return {
-        exitCode: await this.#coldAttach(threadId, options),
+        exitCode: await this.#coldAttach(threadId, attachOptions),
         warm: false,
       };
     }
@@ -351,7 +364,10 @@ export class WarmNativeTuiManager {
           String(Math.max(1, process.stdout.rows ?? 40)),
           "--",
           command,
-          ...buildAttachArgs(threadId),
+          ...buildAttachArgs(
+            threadId,
+            options.dangerouslyBypassApprovalsAndSandbox,
+          ),
         ],
         options.env ?? this.#env,
       );

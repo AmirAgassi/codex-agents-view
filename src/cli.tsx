@@ -126,7 +126,10 @@ async function main(): Promise<void> {
 
   const codexVersion = await detectCodexVersion();
   const client = new CodexClient({ cwd: options.cwd });
-  const nativeTuis = new WarmNativeTuiManager();
+  const nativeTuis = new WarmNativeTuiManager({
+    dangerouslyBypassApprovalsAndSandbox:
+      options.dangerouslyBypassApprovalsAndSandbox,
+  });
   const removeSignalHandlers = installSignalCleanup(client, nativeTuis);
   try {
     let running = true;

@@ -198,7 +198,10 @@ export function AgentViewApp({
     async (threadId: string): Promise<CodexThread> => {
       const existing = stateRef.current.sessions[threadId]?.thread;
       if (subscribedThreadIds.current.has(threadId) && existing) return existing;
-      const resumed = await client.resumeThread(threadId);
+      const resumed = await client.resumeThread(threadId, {
+        approvalPolicy: options.approvalPolicy,
+        sandbox: options.sandbox,
+      });
       if (removedThreadIds.current.has(threadId)) {
         throw new Error("This session was removed while it was loading");
       }
@@ -207,7 +210,7 @@ export function AgentViewApp({
       dispatch({ type: "thread/upsert", thread: resumed.thread });
       return resumed.thread;
     },
-    [client],
+    [client, options.approvalPolicy, options.sandbox],
   );
 
   const refresh = useCallback(async (): Promise<boolean> => {
@@ -253,7 +256,12 @@ export function AgentViewApp({
 
       const active = visible.filter((thread) => thread.status.type === "active");
       const resumed = await Promise.allSettled(
-        active.map((thread) => client.resumeThread(thread.id)),
+        active.map((thread) =>
+          client.resumeThread(thread.id, {
+            approvalPolicy: options.approvalPolicy,
+            sandbox: options.sandbox,
+          }),
+        ),
       );
       for (const result of resumed) {
         if (

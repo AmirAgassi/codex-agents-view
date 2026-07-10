@@ -7,9 +7,26 @@ describe("parseCliOptions", () => {
       cwd: "/tmp/project",
       allProjects: false,
       useWorktrees: true,
+      dangerouslyBypassApprovalsAndSandbox: false,
       help: false,
       version: false,
     });
+  });
+
+  it("supports Codex skip-permissions mode", () => {
+    expect(
+      parseCliOptions(["--dangerously-bypass-approvals-and-sandbox"], "/tmp/project"),
+    ).toMatchObject({
+      approvalPolicy: "never",
+      sandbox: "danger-full-access",
+      dangerouslyBypassApprovalsAndSandbox: true,
+    });
+    expect(
+      parseCliOptions(
+        ["--approval", "never", "--sandbox", "danger-full-access"],
+        "/tmp/project",
+      ).dangerouslyBypassApprovalsAndSandbox,
+    ).toBe(true);
   });
 
   it("parses launch overrides", () => {
