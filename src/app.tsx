@@ -37,10 +37,15 @@ import {
   type SkillDefinition,
 } from "./ui/index.js";
 
-const ROOT_SOURCE_KINDS: NonNullable<ThreadListParams["sourceKinds"]> = [
+const DASHBOARD_SOURCE_KINDS: NonNullable<ThreadListParams["sourceKinds"]> = [
   "cli",
   "vscode",
   "appServer",
+  "subAgent",
+  "subAgentReview",
+  "subAgentCompact",
+  "subAgentThreadSpawn",
+  "subAgentOther",
 ];
 
 export type AppOutcome =
@@ -105,7 +110,7 @@ async function listEveryThread(client: CodexClient): Promise<CodexThread[]> {
       limit: 100,
       sortKey: "updated_at",
       sortDirection: "desc",
-      sourceKinds: ROOT_SOURCE_KINDS,
+      sourceKinds: DASHBOARD_SOURCE_KINDS,
     };
     const page = await client.listThreads(params);
     for (const thread of page.data) byId.set(thread.id, thread);
