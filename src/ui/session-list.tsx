@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from "react";
 import { Box, Text } from "ink";
-import { formatAge, sessionName, sessionSummary } from "./format.js";
+import type { SessionRecord } from "../domain/types.js";
+import { formatAge, semanticGroup, sessionName, sessionSummary } from "./format.js";
 import type {
   SemanticSessionGroup,
   SessionListItem,
@@ -13,12 +14,14 @@ interface SessionListProps {
   selectedId?: string;
   maxRows: number;
   width: number;
+  subagentsByParentId: Record<string, SessionRecord[]>;
 }
 
 type ListEntry =
   | { type: "spacer"; key: string }
   | { type: "heading"; key: string; label: string; count: number }
-  | { type: "session"; key: string; item: SessionListItem };
+  | { type: "session"; key: string; item: SessionListItem }
+  | { type: "subagent"; key: string; record: SessionRecord };
 
 interface VisibleEntries {
   before: number;
@@ -41,6 +44,7 @@ function visibleWindow(
   items: SessionListItem[],
   selectedId: string | undefined,
   maxRows: number,
+  subagentsByParentId: Record<string, SessionRecord[]>,
 ): VisibleEntries {
   if (items.length === 0) return { before: 0, after: 0, entries: [] };
 
@@ -54,11 +58,18 @@ function visibleWindow(
       label: section.label,
       count: section.items.length,
     },
-    ...section.items.map((item) => ({
-      type: "session" as const,
-      key: `session:${item.id}`,
-      item,
-    })),
+    ...section.items.flatMap((item) => [
+      {
+        type: "session" as const,
+        key: `session:${item.id}`,
+        item,
+      },
+      ...(subagentsByParentId[item.id] ?? []).map((record) => ({
+        type: "subagent" as const,
+        key: `subagent:${record.thread.id}`,
+        record,
+      })),
+    ]),
   ]);
   const selectedEntryIndex = Math.max(
     0,
@@ -139,16 +150,46 @@ const SessionRow = memo(function SessionRow({
   );
 });
 
+const SubagentRow = memo(function SubagentRow({
+  record,
+  nameWidth,
+}: {
+  record: SessionRecord;
+  nameWidth: number;
+}): React.JSX.Element {
+  const group = semanticGroup(record);
+  const color = record.thread.status.type === "systemError" ? "red" : STATUS_APPEARANCE[group].color;
+  const timestamp = record.lastChangedAt || record.thread.recencyAt || record.thread.updatedAt;
+
+  return (
+    <Box width="100%" paddingLeft={4} paddingRight={1}>
+      <Box width={2} flexShrink={0}>
+        <Text color={color}>•</Text>
+      </Box>
+      <Box width={Math.max(10, nameWidth - 3)} minWidth={10} flexShrink={0}>
+        <Text dimColor wrap="truncate-end">{sessionName(record)}</Text>
+      </Box>
+      <Box flexGrow={1} minWidth={8} marginLeft={1}>
+        <Text dimColor wrap="truncate-end">{sessionSummary(record)}</Text>
+      </Box>
+      <Box width={6} flexShrink={0} justifyContent="flex-end" marginLeft={1}>
+        <Text dimColor>{formatAge(timestamp)}</Text>
+      </Box>
+    </Box>
+  );
+});
+
 function SessionListComponent({
   sections,
   items,
   selectedId,
   maxRows,
   width,
+  subagentsByParentId,
 }: SessionListProps): React.JSX.Element {
   const visible = useMemo(
-    () => visibleWindow(sections, items, selectedId, maxRows),
-    [sections, items, selectedId, maxRows],
+    () => visibleWindow(sections, items, selectedId, maxRows, subagentsByParentId),
+    [sections, items, selectedId, maxRows, subagentsByParentId],
   );
   const nameWidth = Math.max(16, Math.min(48, Math.floor(width * 0.42)));
 
@@ -176,13 +217,15 @@ function SessionListComponent({
             <Text bold dimColor>{entry.label}</Text>
             <Text dimColor> {entry.count}</Text>
           </Box>
-        ) : (
+        ) : entry.type === "session" ? (
           <SessionRow
             key={entry.key}
             item={entry.item}
             selected={entry.item.id === selectedId}
             nameWidth={nameWidth}
           />
+        ) : (
+          <SubagentRow key={entry.key} record={entry.record} nameWidth={nameWidth} />
         ),
       )}
       {visible.after > 0 ? <Text dimColor>  … {visible.after} more</Text> : null}

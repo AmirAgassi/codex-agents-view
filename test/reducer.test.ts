@@ -16,6 +16,8 @@ import {
   selectGroupedSessions,
   selectOrderedSessions,
   selectSessionCounts,
+  subagentParentId,
+  subagentRootId,
   truncateSummary,
 } from "../src/domain/selectors.js";
 import {
@@ -420,6 +422,14 @@ describe("session selectors", () => {
     expect(isSubagentThread(thread("root", { source: "appServer", threadSource: "user" }))).toBe(
       false,
     );
+    const nested = thread("nested", {
+      sessionId: "root",
+      source: { subagent: { thread_spawn: { parent_thread_id: "child" } } },
+      threadSource: "subagent",
+    });
+    const child = thread("child", { parentThreadId: "root", threadSource: "subagent" });
+    expect(subagentParentId(nested)).toBe("child");
+    expect(subagentRootId(nested, new Map([["child", child]]))).toBe("root");
   });
 
   it("assigns groups with pinned and needs-input precedence", () => {

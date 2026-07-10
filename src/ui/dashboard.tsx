@@ -543,6 +543,7 @@ export function Dashboard({
             selectedId={selectedId}
             maxRows={listRows}
             width={terminalWidth}
+            subagentsByParentId={dashboardModel.subagentsByParentId}
           />
           {selectedRequest ? (
             <RequestPanel

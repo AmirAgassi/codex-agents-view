@@ -22,16 +22,53 @@ function normalizedSourceKind(value: string): string {
   return value.toLowerCase().replace(/[_-]/gu, "");
 }
 
+function sourceIsSubagent(source: unknown): boolean {
+  if (typeof source === "string") return normalizedSourceKind(source) === "subagent";
+  if (source === null || typeof source !== "object" || Array.isArray(source)) return false;
+  return Object.keys(source).some((key) => normalizedSourceKind(key) === "subagent");
+}
+
+function parentIdFromSource(source: unknown, depth = 0): string | undefined {
+  if (depth > 4 || source === null || typeof source !== "object" || Array.isArray(source)) {
+    return undefined;
+  }
+  for (const [key, value] of Object.entries(source)) {
+    if (normalizedSourceKind(key) === "parentthreadid" && typeof value === "string") return value;
+    const nested = parentIdFromSource(value, depth + 1);
+    if (nested) return nested;
+  }
+  return undefined;
+}
+
 export function isSubagentThread(thread: CodexThread): boolean {
   if (thread.parentThreadId) return true;
   if (thread.threadSource && normalizedSourceKind(thread.threadSource) === "subagent") return true;
-  if (typeof thread.source === "string") {
-    return normalizedSourceKind(thread.source) === "subagent";
+  return sourceIsSubagent(thread.source);
+}
+
+export function subagentParentId(thread: CodexThread): string | undefined {
+  if (!isSubagentThread(thread)) return undefined;
+  if (thread.parentThreadId) return thread.parentThreadId;
+  const sourceParentId = parentIdFromSource(thread.source);
+  if (sourceParentId) return sourceParentId;
+  if (thread.sessionId && thread.sessionId !== thread.id) return thread.sessionId;
+  if (thread.forkedFromId) return thread.forkedFromId;
+  return undefined;
+}
+
+export function subagentRootId(
+  thread: CodexThread,
+  threadsById: ReadonlyMap<string, CodexThread>,
+): string | undefined {
+  let parentId = subagentParentId(thread);
+  const visited = new Set<string>();
+  while (parentId && !visited.has(parentId)) {
+    visited.add(parentId);
+    const parent = threadsById.get(parentId);
+    if (!parent || !isSubagentThread(parent)) return parentId;
+    parentId = subagentParentId(parent);
   }
-  if (thread.source === null || typeof thread.source !== "object" || Array.isArray(thread.source)) {
-    return false;
-  }
-  return Object.keys(thread.source).some((key) => normalizedSourceKind(key) === "subagent");
+  return undefined;
 }
 
 export function truncateSummary(value: string, maxLength = 100): string {

@@ -96,4 +96,5 @@ export interface DashboardModel {
   counts: DashboardCounts;
   sections: SessionSection[];
   items: SessionListItem[];
+  subagentsByParentId: Record<string, SessionRecord[]>;
 }

@@ -18,7 +18,7 @@ This is an unofficial community project and is not affiliated with or endorsed b
 - Enter the installed native Codex TUI with its complete history, slash commands, attachments, modes, approvals, and future features intact
 - Preload active or pinned native chats and retain up to three warm TUIs so MCP servers initialize once
 - Detach from a native chat while its turn keeps running, then open or manage another session
-- Hide spawned subagent threads while their parent chat remains visible
+- Show spawned subagents as read-only child rows beneath their selectable parent chat
 - Resume idle/cold sessions before following up, or steer an active turn in place
 - Answer `request_user_input` questions and command, file, or permission approvals
 - Interrupt, rename, pin, archive, refresh, and reopen sessions

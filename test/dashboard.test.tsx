@@ -123,6 +123,7 @@ describe("Dashboard selection", () => {
         selectedId="first"
         maxRows={12}
         width={120}
+        subagentsByParentId={model.subagentsByParentId}
       />,
     );
     const lines = output.split("\n");
@@ -130,6 +131,38 @@ describe("Dashboard selection", () => {
 
     expect(completedHeading).toBeGreaterThan(0);
     expect(lines[completedHeading - 1]).toBe("");
+  });
+
+  it("renders subagents under their parent without adding selectable rows", () => {
+    const dashboardState = state(["first", "second"]);
+    dashboardState.sessions.child = createSessionRecord({
+      id: "child",
+      sessionId: "first",
+      parentThreadId: "first",
+      preview: "Audit authentication",
+      cwd: "/repo",
+      createdAt: 103,
+      updatedAt: 103,
+      status: { type: "active", activeFlags: [] },
+      agentNickname: "Goodall",
+      threadSource: "subagent",
+      turns: [],
+    });
+    const model = buildDashboardModel(dashboardState, DEFAULT_PREFERENCES);
+    const output = renderToString(
+      <SessionList
+        sections={model.sections}
+        items={model.items}
+        selectedId="first"
+        maxRows={12}
+        width={120}
+        subagentsByParentId={model.subagentsByParentId}
+      />,
+    );
+
+    expect(output).toContain("• Goodall");
+    expect(model.items.map((item) => item.id)).toEqual(["second", "first"]);
+    expect(model.counts).toEqual({ needsInput: 0, working: 0, completed: 2, stale: 0 });
   });
 
   it("restores the attached row after an empty loading render", async () => {

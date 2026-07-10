@@ -1,4 +1,5 @@
 import type { DashboardState, Preferences, SessionRecord } from "../domain/types.js";
+import { isSubagentThread, subagentRootId } from "../domain/selectors.js";
 import { basename, semanticGroup } from "./format.js";
 import type {
   DashboardCounts,
@@ -27,7 +28,22 @@ export function buildDashboardModel(
     preferences.order.map((threadId, index) => [threadId, index] as const),
   );
   const records = Object.values(state.sessions);
-  const items = records.map<SessionListItem>((record) => ({
+  const threadsById = new Map(records.map((record) => [record.thread.id, record.thread] as const));
+  const rootRecords = records.filter((record) => !isSubagentThread(record.thread));
+  const rootIds = new Set(rootRecords.map((record) => record.thread.id));
+  const subagentsByParentId: Record<string, SessionRecord[]> = {};
+  for (const record of records) {
+    if (!isSubagentThread(record.thread)) continue;
+    const parentId = subagentRootId(record.thread, threadsById);
+    if (!parentId || !rootIds.has(parentId)) continue;
+    (subagentsByParentId[parentId] ??= []).push(record);
+  }
+  for (const subagents of Object.values(subagentsByParentId)) {
+    subagents.sort((left, right) =>
+      left.thread.createdAt - right.thread.createdAt || left.thread.id.localeCompare(right.thread.id)
+    );
+  }
+  const items = rootRecords.map<SessionListItem>((record) => ({
     id: record.thread.id,
     record,
     semanticGroup: semanticGroup(record),
@@ -94,5 +110,10 @@ export function buildDashboardModel(
     }
   }
 
-  return { counts, sections, items: sections.flatMap((section) => section.items) };
+  return {
+    counts,
+    sections,
+    items: sections.flatMap((section) => section.items),
+    subagentsByParentId,
+  };
 }

@@ -12,7 +12,7 @@ import {
   createInitialDashboardState,
   dashboardReducer,
 } from "./domain/reducer.js";
-import { isSubagentThread } from "./domain/selectors.js";
+import { isSubagentThread, subagentRootId } from "./domain/selectors.js";
 import type {
   CodexThread,
   PendingRequest,
@@ -90,7 +90,6 @@ function threadIsVisible(
   preferences: Preferences,
   registry: WorkspaceRegistry,
 ): boolean {
-  if (isSubagentThread(thread)) return false;
   if (options.allProjects) return true;
   if (preferences.pinnedThreadIds.includes(thread.id)) return true;
   if (thread.cwd && pathIsWithin(options.cwd, thread.cwd)) return true;
@@ -259,15 +258,24 @@ export function AgentViewApp({
         loadWorkspaceRegistry(),
       ]);
       registryRef.current = registry;
-      const visible = threads.filter((thread) =>
+      const threadsById = new Map(threads.map((thread) => [thread.id, thread] as const));
+      const visibleRoots = threads.filter((thread) =>
+        !isSubagentThread(thread) &&
         !removedThreadIds.current.has(thread.id) &&
-        threadIsVisible(thread, options, preferencesRef.current, registry),
+        threadIsVisible(thread, options, preferencesRef.current, registry)
       );
+      const visibleRootIds = new Set(visibleRoots.map((thread) => thread.id));
+      const visible = threads.filter((thread) => {
+        if (visibleRootIds.has(thread.id)) return true;
+        if (!isSubagentThread(thread) || removedThreadIds.current.has(thread.id)) return false;
+        const parentId = subagentRootId(thread, threadsById);
+        return parentId !== undefined && visibleRootIds.has(parentId);
+      });
       const visibleIds = new Set(visible.map((thread) => thread.id));
       dispatch({ type: "thread/list", threads: visible });
       if (onWarmThreads) {
         const pinnedIds = new Set(preferencesRef.current.pinnedThreadIds);
-        const warmTargets = visible
+        const warmTargets = visibleRoots
           .map((thread, index) => ({
             thread,
             index,
@@ -287,7 +295,7 @@ export function AgentViewApp({
         if (!visibleIds.has(threadId)) dispatch({ type: "thread/delete", threadId });
       }
 
-      const active = visible.filter((thread) => thread.status.type === "active");
+      const active = visibleRoots.filter((thread) => thread.status.type === "active");
       const resumed = await Promise.allSettled(
         active.map((thread) =>
           client.resumeThread(thread.id, {
@@ -375,15 +383,6 @@ export function AgentViewApp({
       const threadId = typeof notification.params?.threadId === "string"
         ? notification.params.threadId
         : undefined;
-      const startedThread = notification.method === "thread/started" &&
-          typeof notification.params?.thread === "object" &&
-          notification.params.thread !== null
-        ? notification.params.thread as CodexThread
-        : undefined;
-      if (startedThread && isSubagentThread(startedThread)) {
-        removedThreadIds.current.add(startedThread.id);
-        return;
-      }
       if (threadId && (notification.method === "thread/archived" || notification.method === "thread/deleted")) {
         removedThreadIds.current.add(threadId);
         hydratedThreadIds.current.delete(threadId);
