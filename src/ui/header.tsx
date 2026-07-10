@@ -66,6 +66,8 @@ function HeaderComponent({
           <Text color="cyan">{countLabel(counts.working, "working")}</Text>
           <Text dimColor> · </Text>
           <Text>{countLabel(counts.completed, "completed")}</Text>
+          <Text dimColor> · </Text>
+          <Text color="gray">{countLabel(counts.stale, "stale")}</Text>
         </Box>
       </Box>
     </Box>

@@ -10,6 +10,7 @@ export const SESSION_GROUP_ORDER: readonly SessionGroup[] = [
   "needsInput",
   "working",
   "completed",
+  "stale",
 ];
 
 function normalizedText(value: string): string {
@@ -40,6 +41,7 @@ export function sessionIsWorking(session: SessionRecord): boolean {
 
 export function getSessionGroup(session: SessionRecord, preferences: Preferences): SessionGroup {
   if (preferences.pinnedThreadIds.includes(session.thread.id)) return "pinned";
+  if (session.thread.status.type === "notLoaded") return "stale";
   if (sessionNeedsInput(session)) return "needsInput";
   if (sessionIsWorking(session)) return "working";
   return "completed";
@@ -170,6 +172,7 @@ export function selectGroupedSessions(
     needsInput: [],
     working: [],
     completed: [],
+    stale: [],
   };
   const order = preferenceOrder(preferences);
   for (const session of Object.values(state.sessions)) {
@@ -200,6 +203,7 @@ export function selectSessionCounts(
     needsInput: groups.needsInput.length,
     working: groups.working.length,
     completed: groups.completed.length,
+    stale: groups.stale.length,
   };
 }
 

@@ -33,6 +33,7 @@ const STATUS_APPEARANCE: Record<
   needsInput: { symbol: "◆", color: "yellow" },
   working: { symbol: "*", color: "cyan" },
   completed: { symbol: "●", color: "green" },
+  stale: { symbol: "○", color: "gray" },
 };
 
 function visibleWindow(
@@ -102,8 +103,6 @@ const SessionRow = memo(function SessionRow({
   const appearance =
     item.record.thread.status.type === "systemError"
       ? { symbol: "×", color: "red" }
-      : item.record.thread.status.type === "notLoaded"
-        ? { symbol: "○", color: "gray" }
       : STATUS_APPEARANCE[item.semanticGroup];
   const timestamp =
     item.record.lastChangedAt ||

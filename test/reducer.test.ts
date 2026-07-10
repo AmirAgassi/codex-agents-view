@@ -417,11 +417,13 @@ describe("session selectors", () => {
     const input = record("input", { type: "active", activeFlags: ["waitingOnUserInput"] }, BASE_TIME);
     const working = record("working", { type: "active", activeFlags: [] }, BASE_TIME);
     const completed = record("completed", { type: "idle" }, BASE_TIME);
+    const stale = record("stale", { type: "notLoaded" }, BASE_TIME);
 
     expect(getSessionGroup(pinned, preferences)).toBe("pinned");
     expect(getSessionGroup(input, preferences)).toBe("needsInput");
     expect(getSessionGroup(working, preferences)).toBe("working");
     expect(getSessionGroup(completed, preferences)).toBe("completed");
+    expect(getSessionGroup(stale, preferences)).toBe("stale");
   });
 
   it("groups, filters by cwd, and orders deterministically", () => {
@@ -452,6 +454,7 @@ describe("session selectors", () => {
       needsInput: 0,
       working: 1,
       completed: 2,
+      stale: 0,
     });
   });
 

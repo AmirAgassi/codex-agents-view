@@ -108,7 +108,7 @@ export interface DashboardState {
   connectionError?: string;
 }
 
-export type SessionGroup = "pinned" | "needsInput" | "working" | "completed";
+export type SessionGroup = "pinned" | "needsInput" | "working" | "completed" | "stale";
 
 export interface Preferences {
   version: 1;

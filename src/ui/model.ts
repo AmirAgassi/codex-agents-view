@@ -15,6 +15,7 @@ const STATE_GROUPS: ReadonlyArray<{
   { id: "needsInput", label: "Awaiting input" },
   { id: "working", label: "Working" },
   { id: "completed", label: "Completed" },
+  { id: "stale", label: "Stale" },
 ];
 
 export function buildDashboardModel(
@@ -49,6 +50,7 @@ export function buildDashboardModel(
     needsInput: 0,
     working: 0,
     completed: 0,
+    stale: 0,
   };
   for (const item of items) counts[item.semanticGroup] += 1;
 

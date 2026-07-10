@@ -70,12 +70,14 @@ export interface DashboardCounts {
   needsInput: number;
   working: number;
   completed: number;
+  stale: number;
 }
 
 export type SemanticSessionGroup =
   | "needsInput"
   | "working"
-  | "completed";
+  | "completed"
+  | "stale";
 
 export interface SessionListItem {
   id: string;

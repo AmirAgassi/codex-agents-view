@@ -49,6 +49,7 @@ export function sessionSummary(record: SessionRecord): string {
 
 export function semanticGroup(record: SessionRecord): SemanticSessionGroup {
   const { status } = record.thread;
+  if (status.type === "notLoaded") return "stale";
   const isWaiting =
     record.pendingRequests.length > 0 ||
     (status.type === "active" &&

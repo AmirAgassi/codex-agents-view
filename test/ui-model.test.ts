@@ -22,15 +22,35 @@ function historicalSession(id: string, createdAt = 100, updatedAt = 200) {
 }
 
 describe("dashboard presentation model", () => {
-  it("shows unloaded historical threads as completed with a process-shape distinction", () => {
+  it("moves unloaded historical threads into the stale section", () => {
     const session = historicalSession("one");
     const model = buildDashboardModel(
       { connection: "connected", sessions: { one: session } },
       DEFAULT_PREFERENCES,
     );
 
+    expect(semanticGroup(session)).toBe("stale");
+    expect(model.counts).toEqual({ needsInput: 0, working: 0, completed: 0, stale: 1 });
+    expect(model.sections[0]?.label).toBe("Stale");
+  });
+
+  it("keeps loaded idle threads in completed", () => {
+    const session = createSessionRecord({
+      id: "done",
+      preview: "Done",
+      cwd: "/repo",
+      createdAt: 100,
+      updatedAt: 200,
+      status: { type: "idle" },
+      turns: [],
+    });
+    const model = buildDashboardModel(
+      { connection: "connected", sessions: { done: session } },
+      DEFAULT_PREFERENCES,
+    );
+
     expect(semanticGroup(session)).toBe("completed");
-    expect(model.counts).toEqual({ needsInput: 0, working: 0, completed: 1 });
+    expect(model.counts).toEqual({ needsInput: 0, working: 0, completed: 1, stale: 0 });
     expect(model.sections[0]?.label).toBe("Completed");
   });
 
@@ -75,7 +95,7 @@ describe("dashboard presentation model", () => {
       },
     );
 
-    expect(model.sections.map((section) => section.label)).toEqual(["Pinned", "Completed"]);
+    expect(model.sections.map((section) => section.label)).toEqual(["Pinned", "Stale"]);
     expect(model.sections[0]?.items.map((item) => item.id)).toEqual([
       "first-pinned",
       "second-pinned",

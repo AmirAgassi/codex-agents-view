@@ -11,7 +11,7 @@ This is an unofficial community project and is not affiliated with or endorsed b
 
 ## What works
 
-- Sessions grouped into pinned, awaiting input, working, and completed
+- Sessions grouped into pinned, awaiting input, working, completed, and stale unloaded history
 - Live turn, tool, plan, diff, output, and status events
 - Type to dispatch from the dashboard with isolated Git worktrees by default; new tasks stay in Agents View and run in the background
 - Stable launch-time ordering with newest chats first, newly pinned chats appended within Pinned, and persistent manual reordering
