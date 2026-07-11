@@ -7,6 +7,9 @@ It uses [Codex App Server](https://developers.openai.com/codex/app-server) direc
 pending approvals are replayed when it reconnects.
 
 
+<img width="717" height="826" alt="image" src="https://github.com/user-attachments/assets/22b13413-b1de-4412-baeb-5a2e7e50bffe" />
+
+
 This is an unofficial community project and is not affiliated with or endorsed by OpenAI or Anthropic.
 
 ## What works
